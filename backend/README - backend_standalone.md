@@ -47,7 +47,7 @@ Replace <OpenAI_API_key> with your key and run the following (Tip: Copy and past
   (echo "OPENAI_API_TYPE=open_ai" > .env;
   echo "OPENAI_API_VERSION=2020-11-07" >> .env;
   echo "OPENAI_API_BASE=https://api.openai.com/v1" >> .env;
-  echo "OPENAI_API_KEY=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" >> .env;
+  echo "OPENAI_API_KEY=<your secret key>" >> .env;
   echo "OPENAI_ENGINE=gpt-3.5-turbo" >> .env;
   echo "LOG_TO_FILE_ENABLED=0" >> .env;
   echo "LOGS_PATH=bot_logic/logs" >> .env;
