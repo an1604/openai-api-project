@@ -1,0 +1,73 @@
+version: '3.7'
+
+services:
+  ##############################
+  #   /\_/\
+  #  ( o.o ) > FRONTEND SERVICE
+  #   > ^ <
+  ##############################
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        CURRENT_VERSION: ${CURRENT_VERSION}
+    image: insait/chatbot-frontend:${CURRENT_VERSION}
+    container_name: chatbot-frontend
+    ports:
+      - '80:3000'
+    env_file:
+      - frontend/.env
+    depends_on:
+      - backend
+
+  ##############################
+  #   /\_/\
+  #  ( o.o ) > BACKEND SERVICE
+  #   > ^ <
+  ##############################
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        CURRENT_VERSION: ${CURRENT_VERSION}
+    image: insait/chatbot-backend:${CURRENT_VERSION}
+    container_name: chatbot-backend
+    ports:
+      - '5000:5000'
+    env_file:
+      - backend/.env
+    environment:
+      FLASK_APP: app.py
+      FLASK_RUN_HOST: 0.0.0.0
+    depends_on:
+      - chatbot-db
+
+  ##############################
+  #   /\_/\
+  #  ( o.o ) > POSTGRES SERVICE
+  #   > ^ <
+  ##############################
+
+  chatbot-db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+      args:
+        CURRENT_VERSION: ${CURRENT_VERSION}
+    image: insait/chatbot-db:${CURRENT_VERSION}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    container_name: chatbot-db
+    environment:
+      POSTGRES_DB: chatbot
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+
+volumes:
+  postgres_data:

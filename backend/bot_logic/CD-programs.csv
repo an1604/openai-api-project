@@ -1,0 +1,13 @@
+Program Name,Duration,APY Rate,Withdrawal Option,Notes
+Short-Term Saver I,3 months,0.5%,End of term,Higher rate for end of term withdrawal
+Short-Term Flex I,3 months,0.3%,Every month,Flexibility with monthly withdrawal
+Short-Term Saver II,6 months,0.9%,End of term,Higher rate for end of term withdrawal
+Short-Term Flex II,6 months,0.6%,Every month,Flexibility with monthly withdrawal
+Mid-Term Saver I,9 months,1.2%,End of term,Higher rate for end of term withdrawal
+Mid-Term Flex I,9 months,0.9%,Every month,Flexibility with monthly withdrawal
+Mid-Term Saver II,1 year,1.5%,End of term,Higher rate for end of term withdrawal
+Mid-Term Flex II,1 year,1.2%,Every month,Flexibility with monthly withdrawal
+Long-Term Saver I,2 years,2.5%,End of term,Higher rate for end of term withdrawal
+Long-Term Flex I,2 years,2.0%,Every month,Flexibility with monthly withdrawal
+Long-Term Saver II,3 years,3.0%,End of term,Higher rate for end of term withdrawal
+Long-Term Flex II,3 years,2.5%,Every month,Flexibility with monthly withdrawal
