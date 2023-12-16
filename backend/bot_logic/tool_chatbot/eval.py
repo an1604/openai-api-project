@@ -1,6 +1,6 @@
 import json
-from bot_logic.tool_chatbot.chat_utils import chat_completion_request
-from bot_logic.tool_chatbot.utils import payout_after_interest
+from tool_chatbot.chat_utils import chat_completion_request
+from tool_chatbot.utils import payout_after_interest
 
 
 def switch_roles(chat_history, new_system_content):

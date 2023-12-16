@@ -5,8 +5,6 @@ import os
 import openai
 import dotenv
 import faiss
-# from bot_logic.tool_chatbot.utils import get_embedding
-# from bot_logic.tool_chatbot.utils import get_faq
 
 from tool_chatbot.utils import get_embedding
 from tool_chatbot.utils import get_faq
@@ -26,7 +24,7 @@ faq = get_faq()
 
 # Add vectors to FAISS index
 for qa in faq:
-    index.add(get_embedding(qa))
+    index.add(get_embedding(qa))  # Array of floats
 
 # Save the index to a file
 faiss.write_index(index, "bot_logic/vector_index.faiss")

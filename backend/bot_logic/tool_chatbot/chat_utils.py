@@ -1,19 +1,20 @@
 import json
-from bot_logic.tool_chatbot.functions import functions
+from tool_chatbot.functions import functions
 import logging
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 import openai
 import os
 from dotenv import load_dotenv
-from bot_logic.tool_chatbot.utils import (
+from tool_chatbot.utils import (
     MissingArgumentError,
     ChatToolError,
     get_functions_dict,
     validate_function_call,
     _get_tagging_function,
 )
-from bot_logic.tool_chatbot.tokens import num_tokens_from_messages, num_tokens_from_functions
+from tool_chatbot.tokens import num_tokens_from_messages, num_tokens_from_functions
 
+import pdb
 
 REMEMBER_PROMPT = {"role": "system", "content": open(
     "bot_logic/prompts/remember.txt", "r").read()}
@@ -58,11 +59,11 @@ class ChatMemory:
     reraise=True,
 )
 def chat_completion_request(
-    messages,
-    functions=None,
-    function_call="auto",
-    engine=OPENAI_ENGINE,
-    temperature=0.0,
+        messages,
+        functions=None,
+        function_call="auto",
+        engine=OPENAI_ENGINE,
+        temperature=0.0,
 ):
     if isinstance(messages, ChatMemory):
         messages = messages.get_window()
@@ -160,7 +161,7 @@ def get_chat_answer(history, functions, client_info, recursion_depth=0):
                     }
                 )
                 response = chat_completion_request(history, functions=functions, function_call={
-                                                   "name": response.choices[0].message["function_call"]["name"]})
+                    "name": response.choices[0].message["function_call"]["name"]})
 
     # If message, return message
     elif response.choices[0].message.get("content"):
