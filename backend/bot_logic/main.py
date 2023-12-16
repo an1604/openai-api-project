@@ -7,6 +7,7 @@ from tool_chatbot.chatbot_wrapper import ChatBot
 import json
 import openai
 from dotenv import load_dotenv
+from openai.error import RateLimitError
 
 load_dotenv('.env')
 
@@ -17,14 +18,17 @@ openai.api_version = os.getenv('OPENAI_API_VERSION')
 
 if __name__ == "__main__":
     chatbot = ChatBot(**get_bot_configuration())
+    last_input = None
     try:
         response = chatbot.generate_initial_message()
         print("assistant: " + response)
         while True:
-            user_input = input("User: ")
+            if not last_input:
+                user_input = input("User: ")
             try:
                 response = chatbot.generate_response(user_input=user_input)
                 print(f"Assistant: {response}")
+                last_input = None
                 # # Get messages since user_input
                 # messages = chatbot.chat_history.get_window()
                 # index = [m["content"] for m in messages].index(user_input) + 1
@@ -34,6 +38,9 @@ if __name__ == "__main__":
             except LeavingChat:
                 print("You have left the chat.")
                 break
+            except RateLimitError:
+                print('A RateLimitError occurred, waiting 20 seconds...')
+                last_input = user_input
     except KeyboardInterrupt:
         with open("bot_logic/chat_history.json", "w") as f:
             json.dump(chatbot.chat_history.history, f, indent=4)

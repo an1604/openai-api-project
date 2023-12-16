@@ -1,7 +1,7 @@
 from typing import Optional, Any
 import pickle
 import json
-from bot_logic.tool_chatbot.utils import (
+from tool_chatbot.utils import (
     INFORMATION_TO_VERIFY,
     get_embedding,
     get_nearest_neighbor,
@@ -19,25 +19,36 @@ from bot_logic.tool_chatbot.utils import (
 import pandas as pd
 
 
-def save_client_info(
-    client_info: ClientInfo,
-    amount: Optional[float] = None,
-    duration: Optional[float] = None,
-    withdrawal_preference: Optional[str] = None,
-    dumping_type: Optional[str] = "json",
-):
-    '''Save client info
+def assertion_client_info(client_info: ClientInfo) -> ClientInfo:
+    try:
+        assert isinstance(client_info, ClientInfo)
+        assert client_info.amount, "No amount saved in client info."
+        assert client_info.duration, "No duration saved in client info."
+        assert client_info.credit_score, "No credit score saved in client info."
+        assert client_info.monthly_income, "No monthly income saved in client info."
+        assert client_info.employment_status, "No employment status saved in client info."
+        assert client_info.duration, "No duration saved in client info."
+        return True
+    except AssertionError:
+        return False
 
-    Args:
-        amount (float): Amount they wish to deposit (P).
-        duration (float): Duration of deposit (t in years).
-        withdrawal_preference (str): Withdrawal preference (end of the term or every month).'''
+
+def save_client_info(client_info: ClientInfo,
+                     amount: Optional[float] = None,
+                     duration: Optional[float] = None,
+                     credit_score: Optional[int] = None,
+                     monthly_income: Optional[float] = None,
+                     employment_status: Optional[str] = None,
+                     existing_debt: Optional[float] = None,
+                     down_payment: Optional[float] = None,
+                     dumping_type: Optional[str] = "json"
+                     ):
     products = get_products()
     products.columns = products.columns.str.lower()
     products.columns = products.columns.str.replace(' ', '_')
-    
     invalid_values = []
-    for item in ("amount", "duration", "withdrawal_preference"):
+    for item in ("amount", "duration", "credit_score", "monthly_income", "employment_status", "existing_debt",
+                 "down_payment"):
         val = eval(item)
         if val:
             set_val = True
@@ -47,7 +58,8 @@ def save_client_info(
                 else:
                     value_to_verify = val
                 if value_to_verify not in products[item].to_list():
-                    invalid_values.append(f"{val} is an invalid value for {item}; Optional values are {products[item].to_list()}")
+                    invalid_values.append(
+                        f"{val} is an invalid value for {item}; Optional values are {products[item].to_list()}")
                     set_val = False
             if set_val:
                 setattr(client_info, item, val)
@@ -67,22 +79,19 @@ def get_client_info(validate=True, as_object=False, dumping_type="json"):
     return (
         f"Amount: {client_info.amount}\n"
         f"Duration: {client_info.duration}\n"
-        f"Withdrawal Preference: {client_info.withdrawal_preference}"
+        f"Credit Score: {client_info.credit_score}\n"
+        f"Monthly Income: {client_info.monthly_income}\n"
+        f"Employment Status: {client_info.employment_status}\n"
+        f"Existing Debt: {client_info.existing_debt}\n"
+        f"Down Payment: {client_info.down_payment}\n"
     )
 
 
-def open_account(open_account, client_info, **kwargs):
-    '''Open an account for the client'''
-    # Assert that all client info is present
-    try:
-        assert client_info.amount, "No amount saved in client info."
-        assert client_info.duration, "No duration saved in client info."
-        assert (
-            client_info.withdrawal_preference
-        ), "No withdrawal preference saved in client info."
-        return "Redirect customer to www.leumi.co.il where they will be able to open an account."
-    except AssertionError as e:
-        return f"Not all required parameters saved in client info. Error: {e}"
+def create_loan(client_info):
+    if assertion_client_info(client_info):
+        return "Redirect customer to www.leumi.co.il where they will be able to get a loan."
+    return ("You can not have a loan according to your information. Please contact the supporting team for more "
+            "details .")
 
 
 def query_knowledgebase(question, **kwargs):
@@ -136,8 +145,9 @@ def calculate_interest(program, principal, client_info, **kwargs):
     return output
 
 
-def request_human_rep(request_human_rep=None, **kwargs):  # Placeholders are not used but necessary for the function definition of OpenAI
-    '''Request human representative'''
+def request_human_rep(request_human_rep=None,
+                      **kwargs):  # Placeholders are not used but necessary for the function definition of OpenAI
+    """Request human representative"""
     raise LeavingChat
 
 
@@ -150,7 +160,7 @@ def get_available_durations(get_terms=None, **kwargs):
 
 
 def get_product_terms(field='all', **kwargs):
-    '''Get product terms'''
+    """Get product terms"""
     try:
         if field == 'all':
             product_terms = open("bot_logic/CD-programs.csv", "r").read()
@@ -187,7 +197,7 @@ def get_recommended_products(return_all=None, client_info=None, **kwargs):
         products = products[
             products["Withdrawal Option"]
             == WITHDRAWAL_PREFERENCE_MAPPING[client_info.withdrawal_preference]
-        ]
+            ]
     if products.empty:
         return "No products found that fit the currently saved client info."
     # Return all products
@@ -198,13 +208,6 @@ def get_recommended_products(return_all=None, client_info=None, **kwargs):
 
 def get_required_documents(get_documents, client_info, **kwargs):
     """Get required documents for opening an account."""
-    # Assert that all client info is present
-    try:
-        assert client_info.amount, "No amount saved in client info."
-        assert client_info.duration, "No duration saved in client info."
-        assert (
-            client_info.withdrawal_preference
-        ), "No withdrawal preference saved in client info."
+    if assertion_client_info(client_info):
         return "All necessary information is already saved in client info."
-    except AssertionError as e:
-        return f"Not all required parameters saved in client info. Error: {e}"
+    return "Not all required parameters saved in client info"

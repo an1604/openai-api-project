@@ -6,7 +6,7 @@ export CURRENT_VERSION
 MODE="dev"
 DB_HOST="localhost"
 HOSTNAME="localhost"
-OPENAI_API_KEY="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" ## ADD KEY HERE
+OPENAI_API_KEY="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" ## ADD KEY HERE
 LANGUAGE="english"
 
 while [[ "$#" -gt 0 ]]; do

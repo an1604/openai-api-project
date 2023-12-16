@@ -1,42 +1,31 @@
 import openai
 import os
 import dotenv
-from bot_logic.tool_chatbot.utils import ClientInfo, LeavingChat, get_log_name
-from bot_logic.tool_chatbot.chat_utils import ChatMemory, get_chat_answer
-from bot_logic.tool_chatbot.functions import functions
+from tool_chatbot.utils import (ClientInfo, LeavingChat, get_log_name, client_info2string,
+                                initiate_client_info)
+from tool_chatbot.chat_utils import ChatMemory, get_chat_answer
+from tool_chatbot.functions import functions
 import logging
 import time
-
 
 dotenv.load_dotenv()
 
 
-def client_info2string(client_info):
-    return (f"\tAmount: {client_info.amount}\n"
-            f"\tDuration: {client_info.duration}\n"
-            f"\tWithdrawal Preference: {client_info.withdrawal_preference}"
-            )
-
-
 class ChatBot:
     def __init__(
-        self,
-        currency: str,
-        language: str,
-        product_type: str,
-        first_message: str,
-        prompt="bot_logic/prompts/v4_1ofer.txt",
+            self,
+            currency: str,
+            language: str,
+            product_type: str,
+            first_message: str,
+            prompt="bot_logic/prompts/v4_1ofer.txt",
     ):
         assert os.getenv(
             "OPENAI_API_KEY"
         ), "Please set your OPENAI_API_KEY environment variable."
         openai.api_key = os.getenv("OPENAI_API_KEY")
         # Setup storage for Client Info
-        self.client_info = ClientInfo(
-            amount=None,
-            duration=None,
-            withdrawal_preference=None,
-        )
+        self.client_info = initiate_client_info(dump=False)
         self.chat_history = ChatMemory(token_limit=3896, functions=functions)
         with open(prompt, "r") as f:
             self.prompt = f.read()
@@ -49,13 +38,11 @@ class ChatBot:
         self.client_info_str = client_info2string(self.client_info)
         formatted_prompt = self.prompt.format(
             currency=self.currency,
-            language = self.language,
-            type=self.product_type,
-            product_terms=self.product_terms,
+            language=self.language,
             client_info=self.client_info_str,
         )
         self.chat_history.append({
-            "role": "system", 
+            "role": "system",
             "content": formatted_prompt
         })
         self.conversation = ""
@@ -100,9 +87,7 @@ class ChatBot:
             "role": "system",
             "content": self.prompt.format(
                 currency=self.currency,
-                language = self.language,
-                type=self.product_type,
-                product_terms=self.product_terms,
+                language=self.language,
                 client_info=self.client_info,
             ),
         }

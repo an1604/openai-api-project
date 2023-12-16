@@ -35,29 +35,25 @@ class MissingArgumentError(Exception):
     pass
 
 
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
 class ClientInfo(BaseModel):
     """Client information."""
 
-    amount: Optional[int] = Field(
-        ...,
-        ge=0,
-        description="Amount they wish to deposit (P).",
-    )
-    duration: Optional[float] = Field(
-        ...,
-        ge=0,
-        # TODO we could add a maximum duration
-        description="Duration of deposit (t in years).",
-    )
-    withdrawal_preference: Optional[str] = Field(
-        ...,
-        enum=["end_of_term", "monthly"],
-        description=(
-            "Withdrawal preference (if the customer wants access to their money "
-            "end of the term or every month). Only valid options are 'end_of_term' "
-            "and 'monthly'."
-        ),
-    )
+    amount: Optional[float] = Field(..., ge=0, description="Amount they wish to loan")
+    duration: Optional[float] = Field(..., ge=0, description="Duration of loan (t in years).")
+    credit_score: Optional[int] = Field(None, ge=300, le=850,
+                                        description="Client's credit score. A higher credit score can lead to better loan terms.")
+    monthly_income: Optional[float] = Field(None, ge=0,
+                                            description="Client's monthly income. Lenders often consider income when approving loans.")
+    employment_status: Optional[str] = Field(None,
+                                             description="Client's employment status (e.g., employed, self-employed, unemployed).")
+    existing_debt: Optional[float] = Field(None, ge=0,
+                                           description="Total amount of existing debt (e.g., other loans, credit card balances).")
+    down_payment: Optional[float] = Field(None, ge=0, le=float('inf'),
+                                          description="The down payment made by the client, if any.")
 
 
 WITHDRAWAL_PREFERENCE_MAPPING = {
@@ -65,7 +61,15 @@ WITHDRAWAL_PREFERENCE_MAPPING = {
     "end_of_term": "End of term",
 }
 
-INFORMATION_TO_VERIFY = ["duration", "withdrawl_preference"]
+INFORMATION_TO_VERIFY = {
+    "amount": "Amount they wish to loan",
+    "duration": "Duration of loan (t in years)",
+    "credit_score": "Client's credit score",
+    "monthly_income": "Client's monthly income",
+    "employment_status": "Client's employment status",
+    "existing_debt": "Total amount of existing debt",
+    "down_payment": "The down payment made by the client",
+}
 
 
 def get_products(path: str = "bot_logic/CD-programs.csv", sep: str = ",", set_index: Optional[bool] = None):
@@ -75,24 +79,38 @@ def get_products(path: str = "bot_logic/CD-programs.csv", sep: str = ",", set_in
     return products
 
 
-def initiate_client_info():
+def dump_client_info_to_file(client_info):
+    with open("client_info.json", "w") as f:
+        json.dump(client_info, f)
+
+
+def initiate_client_info(dump=True):
     # Setup storage for Client Info
     client_info = ClientInfo(
         amount=None,
         duration=None,
-        withdrawal_preference=None,
+        credit_score=None,
+        monthly_income=None,
+        employment_status=None,
+        existing_debt=None,
+        down_payment=None
     )
-    # Save as JSON
-    with open("client_info.json", "w") as f:
-        json.dump(client_info.model_dump(), f)
+
+    if dump:
+        dump_client_info_to_file(client_info)
+
     return client_info
 
 
 def client_info2string(client_info):
     return (
-        f"\tAmount: {client_info.amount}\n"
-        f"\tDuration: {client_info.duration}\n"
-        f"\tWithdrawal Preference: {client_info.withdrawal_preference}"
+            'Amount: ' + str(client_info.amount) +
+            '\nDuration: ' + str(client_info.duration) +
+            '\nCredit Score: ' + str(client_info.credit_score) +
+            '\nMonthly Income: ' + str(client_info.monthly_income) +
+            '\nEmployment Status: ' + str(client_info.employment_status) +
+            '\nExisting Debt: ' + str(client_info.existing_debt) +
+            '\nDown Payment: ' + str(client_info.down_payment)
     )
 
 
@@ -258,14 +276,16 @@ def get_bot_configuration():
         'hebrew': {
             'currency': "Shekel",
             'language': "Hebrew",
-            'product_type': "תוכנית חסכון",
-            'first_message': "היי מה שלומך? המומחים שלנו בדקו את חשבונך ומצאו שעכשיו יהיה זמן נהדר בשבילך לפתוח תוכנית חסכון, האם תרצה לשמוע עוד פרטים?"
+            'product_type': "מימון לרכב",
+            'first_message': "היי מה שלומך? ברוכים הבאים לעוזר האישי בנושא מימון לרכב! "
+                             ", האם תרצה לשמוע עוד פרטים?"
         },
         'english': {
             'currency': "USD",
             'language': "English",
-            'product_type': "Certificate of Deposit",
-            'first_message': "Hi, how are you? Our experts have checked your account and found that now is a great time for you to open a Certificate of Deposit. Would you like to hear more details?"
+            'product_type': "Car Loan",
+            'first_message': "Hi, how are you? Welcome to the car loans assistance!  Would you like to hear more "
+                             "about the terms of the loan?"
         }
     }
 

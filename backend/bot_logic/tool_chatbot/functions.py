@@ -23,20 +23,6 @@ functions = [
         },
     },
     {
-        "name": "open_account",
-        "description": "Open account for the client if all required information has been saved.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "open_account": {
-                    "type": "boolean",
-                    "description": "Open an account for the client",
-                }
-            },
-            "required": ["open_account"],
-        },
-    },
-    {
         "name": "query_knowledgebase",
         "description": "Query the knowledgebase to answer a general question about the products. The question should be formulated in a way that no further context is required to answer it.",
         "parameters": {
@@ -120,5 +106,50 @@ functions = [
             },
         },
 
+    },
+    {
+        'name': 'crate_loan',
+        'description': 'Creating the loan after checking  the dependencies attributes from the client_info dictionary.',
+        'parameters': {
+            'client_info': {
+                'type': 'object',
+                'description': 'A dictionary containing the client information.',
+                'properties': {
+                    'amount': {
+                        'type': 'float',
+                        'description': 'Amount they wish to loan'
+                    },
+                    'duration': {
+                        'type': 'float',
+                        'description': '{Duration of the loan(t in years).'
+                    },
+                    'credit_score': {
+                        'type': 'int',
+                        'description': "Client's credit score. A higher credit score can lead to better loan terms."
+                    },
+                    'monthly_income': {
+                        'type': 'float',
+                        'description': "Client's monthly income. Lenders often consider income when approving loans."
+                    },
+                    'employment_status': {
+                        'type': 'string',
+                        'description': "Client's employment status (e.g., employed, self-employed, unemployed)."
+                    },
+                    'existing_debt': {
+                        'type': 'string',
+                        'description': "Total amount of existing debt (e.g., other loans, credit card balances)."
+                    },
+                    'down_payment': {
+                        'type': 'float',
+                        'description': "The down payment made by the client, if any."
+                    }
+                },
+
+            }
+        },
+        'returns': {
+            'type': 'string',
+            'description': 'A message indicating the success or failure of the loan creation process.'
+        }
     }
 ]
