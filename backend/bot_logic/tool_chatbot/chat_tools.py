@@ -1,4 +1,5 @@
 """In this module, we define the logic for chatbot."""
+
 from typing import Optional
 
 import pandas as pd
@@ -25,24 +26,37 @@ def check_for_available_products(client: Client,
             e)
 
 
+def check_missing_data(client: Client):
+    if not client.get_client_personal_info().is_missing_data():
+        return "Client's personal information already provided, continue to the next step."
+    if not client.get_client_info().is_missing_data():
+        return "Client's financial information already provided, continue to the next step."
+    if not client.get_car_details().is_missing_data():
+        return "Client's car details already provided, continue to the next step."
+    return 'There is no missing data in the client. '
+
+
 def save_client_personal_information(client: Client,
                                      first_name: Optional[str] = None,
                                      last_name: Optional[str] = None,
                                      annual_income: Optional[float] = None,
                                      employment_status: Optional[str] = None,
                                      dumping_type: Optional[str] = "json"):
-    if any((first_name, last_name, annual_income, employment_status)):
-        if first_name:
-            client.get_client_personal_info().first_name = first_name
-        if last_name:
-            client.get_client_personal_info().last_name = last_name
-        if annual_income:
-            client.get_client_personal_info().annual_income = annual_income
-        if employment_status:
-            client.get_client_personal_info().employment_status = employment_status
-        return f"Client personal information saved successfully. ({client})"
+    if client.get_client_personal_info().is_missing_data():
+        if any((first_name, last_name, annual_income, employment_status)):
+            if first_name:
+                client.get_client_personal_info().first_name = first_name
+            if last_name:
+                client.get_client_personal_info().last_name = last_name
+            if annual_income:
+                client.get_client_personal_info().annual_income = annual_income
+            if employment_status:
+                client.get_client_personal_info().employment_status = employment_status
+            return f"Client personal information saved successfully. ({client})"
+        else:
+            return "No personal information provided for saving."
     else:
-        return "No personal information provided for saving."
+        return "Client personal information already saved before, continue to the next step.", {"client_info": client}
 
 
 def save_client_info(client: Client,
@@ -51,16 +65,19 @@ def save_client_info(client: Client,
                      down_payment_status: Optional[bool] = None,
                      dumping_type: Optional[str] = "json"
                      ):
-    if any([amount, duration, down_payment_status]):
-        if amount:
-            client.get_client_info().loan_amount = amount
-        if duration:
-            client.get_client_info().duration = duration
-        if down_payment_status:
-            client.get_client_info().down_payment_status = down_payment_status
-        return f"Client financial info saved successfully. ({client.get_client_info()})", {"client_info": client}
+    if client.get_client_info().is_missing_data():
+        if any([amount, duration, down_payment_status]):
+            if amount:
+                client.get_client_info().loan_amount = amount
+            if duration:
+                client.get_client_info().duration = duration
+            if down_payment_status:
+                client.get_client_info().down_payment_status = down_payment_status
+            return f"Client financial info saved successfully. ({client.get_client_info()})", {"client_info": client}
+        else:
+            return "Can not save client financial info without loan amount or duration.", {"client_info": client}
     else:
-        return "Can not save client financial info without loan amount or duration.", {"client_info": client}
+        return 'Client financial information already saved, continue to the next step. ', {"client_info": client}
 
 
 def save_car_details(client: Client,
@@ -68,18 +85,21 @@ def save_car_details(client: Client,
                      purchase_price: Optional[float] = None,
                      vin: Optional[str] = None,
                      condition: Optional[str] = None):
-    if any([make_and_model, purchase_price, vin]):
-        if make_and_model:
-            client.get_car_details().make_and_model = make_and_model
-        if purchase_price:
-            client.get_car_details().purchase_price = purchase_price
-        if vin:
-            client.get_car_details().vin = vin
-        if condition:
-            client.get_car_details().condition = condition
-        return f"Car details saved successfully. ({client.get_car_details()})", {"client_info": client}
+    if client.get_client_info().is_missing_data():
+        if any([make_and_model, purchase_price, vin]):
+            if make_and_model:
+                client.get_car_details().make_and_model = make_and_model
+            if purchase_price:
+                client.get_car_details().purchase_price = purchase_price
+            if vin:
+                client.get_car_details().vin = vin
+            if condition:
+                client.get_car_details().condition = condition
+            return f"Car details saved successfully. ({client.get_car_details()})", {"client_info": client}
+        else:
+            return "Not enough arguments provided for saving.", {"client_info": client}
     else:
-        return "Not enough arguments provided for saving.", {"client_info": client}
+        return 'Car details already saved.', {"client_info": client}
 
 
 def save_loan_details(client: Client,
@@ -126,17 +146,20 @@ def query_knowledgebase(question, **kwargs):
     faq = get_faq()
     question_embedding = get_embedding(question)
     indices, distances = get_nearest_neighbor(question_embedding)
-    faq_index = indices
+    faq_index = indices  # 2-dim array, so to get the indices we need to get faq_index[0]
     faq_answer = ''
+    for i in faq_index[0]:
+        try:
+            faq_content = faq[i]
 
-    for i in faq_index:
-        faq_content = faq[i]
-
-        if faq_content == "activate function: get_product_terms":
-            faq_answer += get_product_terms()
-            faq_answer += '\n'
-        else:
-            faq_answer += faq_content + '\n'
+            if faq_content == "activate function: get_product_terms":
+                faq_answer += get_product_terms()
+                faq_answer += '\n'
+            else:
+                faq_answer += faq_content + '\n'
+        except IndexError as e:
+            print(f"IndexError: {e}")
+            print(f"Index: {i}, Length of faq: {len(faq)}")
 
     return f'Question: "{question}"\nAnswer: {faq_answer}'
 

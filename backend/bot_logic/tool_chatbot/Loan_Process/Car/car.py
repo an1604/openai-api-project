@@ -14,6 +14,11 @@ class Car_Details(BaseModel):
     purchase_price: Optional['float'] = Field(None, description="The purchase price of the car (e.g '25000.0')")
     condition: Optional['str'] = Field(None, description="The condition of the car (e.g 'Used', 'New')")
 
+    def is_missing_data(self):
+        if self.make_and_model is None or self.vin is None or self.purchase_price is None or self:
+            return True
+        return False
+
     def car_to_string(self) -> str:
         return ('Make and Model: {}'.format(self.make_and_model) +
                 '\nVehicle identification number(Vin): {}'.format(self.vin) +

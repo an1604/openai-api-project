@@ -16,6 +16,9 @@ class Client(BaseModel):
     car_details: Optional[Car_Details] = Field(None, description="The car details.")
     loan: Optional[Loan] = Field(None, description="The that suitable for the client.")
 
+
+
+
     def get_car_details(self) -> Car_Details:
         return self.car_details
 
@@ -27,6 +30,7 @@ class Client(BaseModel):
 
     def get_loan(self) -> Loan:
         return self.loan
+
 
     def client_to_string(self) -> str:
         return ("Client personal information: {}\n".format(self.client_personal_info.client_personal_info_to_string())

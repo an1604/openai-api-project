@@ -186,6 +186,10 @@ functions = [
             }
         },
         "required": []
+    },
+    {
+        "name": "check_missing_data",
+        "description": "Check if there are missing data in the client, and try to avoid redundant requests for information already provided.",
+        "parameters": {}
     }
-
 ]

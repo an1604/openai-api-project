@@ -157,6 +157,7 @@ def get_chat_answer(history, functions, client, recursion_depth=0):
             history.get_window())
     # If function-> call function, get results, generates new answer
     if function_contains_in(response):
+
         if get_available_functions(response, functions):
             # Currently not allowed to call these functions
             history.append(

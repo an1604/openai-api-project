@@ -36,21 +36,21 @@ if __name__ == "__main__":
     last_input = None  # Handle the API limitation.
     try:
         response = chatbot.generate_initial_message()
-        print("assistant: " + response)
+        print("\nassistant: " + response)
         while True:
             if not last_input:
-                user_input = input("User: ")
+                user_input = input("\nUser: ")
                 # input restriction and violating content checking before generating response.
                 if not moderation_model.predict_violating_content(user_input):
                     try:
                         response = chatbot.generate_response(user_input=user_input)
-                        print(f"Assistant: {response}")
+                        print(f"\nAssistant: {response}")
                         last_input = None
                     except LeavingChat:
                         print("You have left the chat.")
                         break
                     except RateLimitError as e:
-                        print('A RateLimitError occurred, waiting 20 seconds...{}'.format(e))
+                        #print('A RateLimitError occurred, waiting 20 seconds...{}'.format(e))
                         time.sleep(20)
                         last_input = user_input
                 else:

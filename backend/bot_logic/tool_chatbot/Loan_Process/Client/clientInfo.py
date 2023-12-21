@@ -13,6 +13,7 @@ class ClientInfo(BaseModel):
     duration: Optional[float] = Field(..., ge=0, description="Duration of loan (t in years).")
     down_payment_status: Optional[str] = Field(None, description="Client's down payment status (e.g., unpaid, paid)")
 
+
     @staticmethod
     def dump_client_info(client_info, dumping_type):
         if dumping_type == "dynamic":
@@ -82,6 +83,11 @@ class ClientInfo(BaseModel):
             "down_payment_status": self.down_payment_status
         }
         return client_info
+
+    def is_missing_data(self):
+        if self.loan_amount is None or self.duration is None or self.down_payment_status is None:
+            return True
+        return False
 
 
 INFORMATION_TO_VERIFY = {

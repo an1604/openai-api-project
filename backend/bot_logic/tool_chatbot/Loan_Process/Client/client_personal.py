@@ -13,6 +13,7 @@ class ClientPersonalInfo(BaseModel):
     employment_status: Optional[str] = Field(None, description="employment status is required")
     social_security_number: Optional[str] = Field(None, description="social security number is required")
 
+
     @staticmethod
     def initiate_personal_info(dump=False):
         personal_info = ClientPersonalInfo(
@@ -81,3 +82,9 @@ class ClientPersonalInfo(BaseModel):
                 "\nAnnual income: {}".format(self.annual_income) +
                 "\nSocial security number: {}".format(self.social_security_number) +
                 "\nEmployment Status: {}".format(self.employment_status))
+
+    def is_missing_data(self):
+        if self.annual_income is None or self.social_security_number is None or self.employment_status is None \
+                or self.first_name is None or self.last_name is None :
+            return True
+        return False
